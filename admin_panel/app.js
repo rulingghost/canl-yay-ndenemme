@@ -46,34 +46,57 @@ window.addEventListener('DOMContentLoaded', () => {
   renderAll();
 });
 
+const defaultFirebaseConfig = {
+  apiKey: "AIzaSyA9mgD_rdvo9IT-m1YF5DS__CzL4YUMezk",
+  authDomain: "canliyayindeneme-8f384.firebaseapp.com",
+  projectId: "canliyayindeneme-8f384",
+  storageBucket: "canliyayindeneme-8f384.firebasestorage.app",
+  messagingSenderId: "595954983322",
+  appId: "1:595954983322:web:9f23ba4e774b98baa61a23",
+  measurementId: "G-19SFHJ4NNC"
+};
+
 function initFirebaseFromStorage() {
+  let config = defaultFirebaseConfig;
   const savedConfig = localStorage.getItem('zego_firebase_config');
   if (savedConfig) {
     try {
-      const config = JSON.parse(savedConfig);
-      document.getElementById('firebaseConfigInput').value = savedConfig;
-      if (!firebase.apps.length) {
-        firebase.initializeApp(config);
-      }
-      db = firebase.firestore();
-      isFirebaseConnected = true;
+      config = JSON.parse(savedConfig);
+    } catch (e) {}
+  }
+  document.getElementById('firebaseConfigInput').value = JSON.stringify(config, null, 2);
 
-      document.getElementById('dbStatusBadge').classList.add('connected');
-      document.getElementById('dbStatusText').innerText = 'Google Firebase Bağlı';
-
-      // Firestore'dan canlı kullanıcıları dinle
-      db.collection('users').onSnapshot((snapshot) => {
-        if (!snapshot.empty) {
-          users = [];
-          snapshot.forEach(doc => {
-            users.push({ id: doc.id, ...doc.data() });
-          });
-          renderAll();
-        }
-      });
-    } catch (e) {
-      console.error('Firebase başlatma hatası:', e);
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
     }
+    db = firebase.firestore();
+    isFirebaseConnected = true;
+
+    document.getElementById('dbStatusBadge').classList.add('connected');
+    document.getElementById('dbStatusText').innerText = 'Google Firebase Bağlandı';
+
+    // Firestore'dan canlı kullanıcıları dinle
+    db.collection('users').onSnapshot((snapshot) => {
+      if (snapshot && !snapshot.empty) {
+        users = [];
+        snapshot.forEach(doc => {
+          users.push({ id: doc.id, ...doc.data() });
+        });
+        renderAll();
+      } else if (snapshot && snapshot.empty) {
+        // İlk açılışta Firestore boşsa örnek kullanıcıları Firestore'a yükle
+        users.forEach(u => {
+          db.collection('users').doc(u.id).set(u);
+        });
+      }
+    }, (error) => {
+      console.warn('Firestore bağlantı uyarısı (Veritabanı Firestore sekmesinden başlatılmalı):', error);
+      document.getElementById('dbStatusText').innerText = 'Firestore Açılmalı';
+      document.getElementById('dbStatusBadge').classList.remove('connected');
+    });
+  } catch (e) {
+    console.error('Firebase başlatma hatası:', e);
   }
 }
 
