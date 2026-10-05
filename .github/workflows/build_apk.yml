@@ -1,24 +1,16 @@
-name: Build Flutter APK
+name: Build Single Flutter APK
 
 on:
   push:
     branches: [ master, main ]
   pull_request:
     branches: [ master, main ]
-  workflow_dispatch: # Manuel olarak GitHub sitesinden tetikleme butonu
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build ${{ matrix.app_name }} APK
+    name: Build All-in-One Super Live APK
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - app_dir: "live_streaming_with_minigame"
-            app_name: "Zego-Live-Audio-Minigame-App"
-          - app_dir: "live_streaming_with_pkbattles"
-            app_name: "Zego-Live-PK-Battle-App"
 
     steps:
       - name: Checkout Repository
@@ -37,15 +29,15 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        working-directory: ./${{ matrix.app_dir }}
+        working-directory: ./live_streaming_with_minigame
         run: flutter pub get
 
       - name: Build APK (Release)
-        working-directory: ./${{ matrix.app_dir }}
+        working-directory: ./live_streaming_with_minigame
         run: flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload Single All-in-One APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.app_name }}-Release-APK
-          path: ./${{ matrix.app_dir }}/build/app/outputs/flutter-apk/app-release.apk
+          name: Zego-Canli-Yayin-Super-App-APK
+          path: ./live_streaming_with_minigame/build/app/outputs/flutter-apk/app-release.apk

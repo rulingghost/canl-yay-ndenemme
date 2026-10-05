@@ -12,6 +12,10 @@ import 'gift_model.dart';
 import 'minigame/service/mini_game_api.dart';
 import 'minigame/ui/show_game_list_view.dart';
 import 'minigame/your_game_server.dart';
+import 'pk_widgets/config.dart';
+import 'pk_widgets/events.dart';
+import 'pk_widgets/surface.dart';
+import 'pk_widgets/widgets/mute_button.dart';
 import 'user_manager.dart';
 
 class LiveStreamingPage extends StatefulWidget {
@@ -40,10 +44,21 @@ class LiveStreamingPageState extends State<LiveStreamingPage> {
       StreamController<GiftBannerItem>.broadcast();
   StreamSubscription? _msgSubscription;
 
+  // PK Battle bildirimleri ve olayları
+  final requestingHostsMapRequestIDNotifier =
+      ValueNotifier<Map<String, List<String>>>({});
+  final requestIDNotifier = ValueNotifier<String>('');
+  PKEvents? pkEvents;
+
   @override
   void initState() {
     super.initState();
     UserManager.instance.initUser(id: widget.userID, name: widget.userName);
+
+    pkEvents = PKEvents(
+      requestIDNotifier: requestIDNotifier,
+      requestingHostsMapRequestIDNotifier: requestingHostsMapRequestIDNotifier,
+    );
 
     // Gelen canlı mesajları dinle, hediye mesajı varsa animasyonu tetikle
     _msgSubscription =
@@ -118,11 +133,88 @@ class LiveStreamingPageState extends State<LiveStreamingPage> {
     );
   }
 
+  Widget foregroundBuilder(BuildContext context, Size size, ZegoUIKitUser? user, Map extraInfo) {
+    if (user == null) {
+      return Container();
+    }
+
+    final hostWidgets = [
+      Positioned(
+        top: 5,
+        left: 5,
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: PKMuteButton(userID: user.id),
+        ),
+      ),
+    ];
+
+    return Stack(
+      children: [
+        ...((widget.isHost && user.id != widget.userID) ? hostWidgets : []),
+        Positioned(
+          top: 5,
+          right: 35,
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircleAvatar(
+              backgroundColor: Colors.purple.withOpacity(0.6),
+              child: Icon(
+                user.camera.value ? Icons.videocam : Icons.videocam_off,
+                color: Colors.white,
+                size: 15,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 5,
+          right: 5,
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircleAvatar(
+              backgroundColor: Colors.purple.withOpacity(0.6),
+              child: Icon(
+                user.microphone.value ? Icons.mic : Icons.mic_off,
+                color: Colors.white,
+                size: 15,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 25,
+          right: 5,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              user.name,
+              style: const TextStyle(color: Colors.white, fontSize: 10),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final hostConfig = ZegoUIKitPrebuiltLiveStreamingConfig.host(
       plugins: [ZegoUIKitSignalingPlugin()],
-    );
+    )
+      ..foreground = PKV2Surface(
+        requestIDNotifier: requestIDNotifier,
+        liveStateNotifier: liveStreamingStateNotifier,
+        requestingHostsMapRequestIDNotifier:
+            requestingHostsMapRequestIDNotifier,
+      );
 
     final audienceConfig = ZegoUIKitPrebuiltLiveStreamingConfig.audience(
       plugins: [ZegoUIKitSignalingPlugin()],
@@ -145,12 +237,15 @@ class LiveStreamingPageState extends State<LiveStreamingPage> {
               userName: widget.userName,
               liveID: widget.liveID,
               events: ZegoUIKitPrebuiltLiveStreamingEvents(
+                pk: pkEvents?.event,
                 onStateUpdated: (state) =>
                     liveStreamingStateNotifier.value = state,
               ),
               config: (widget.isHost ? hostConfig : audienceConfig)
                 ..avatarBuilder = customAvatarBuilder
                 ..audioVideoView.useVideoViewAspectFill = false
+                ..audioVideoView.foregroundBuilder = foregroundBuilder
+                ..pkBattle = pkConfig()
                 ..inRoomMessage.attributes = () => {
                       'lv': UserManager.instance.level.value.toString(),
                     }
