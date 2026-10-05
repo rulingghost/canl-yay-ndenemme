@@ -157,10 +157,6 @@ class LiveAudioRoomPageState extends State<LiveAudioRoomPage> {
                   ZegoLiveAudioRoomMenuBarButtonName.toggleMicrophoneButton,
                   ZegoLiveAudioRoomMenuBarButtonName.showMemberListButton,
                 ]
-                ..inRoomMessage.attributes = () => {
-                      'lv': UserManager.instance.level.value.toString(),
-                    }
-                ..inRoomMessage.avatarLeadingBuilder = _buildLevelBadge
                 ..emptyAreaBuilder = ((_) => _gameCtrl.gameView())
                 ..background = background(),
             ),

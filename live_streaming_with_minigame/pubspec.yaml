@@ -14,7 +14,7 @@ dependencies:
 
   zego_uikit: ^2.28.23
   zego_uikit_prebuilt_live_streaming: ^3.14.2
-  zego_uikit_signaling_plugin: ^2.8.15
+  zego_uikit_signaling_plugin: 2.8.15
 
   cupertino_icons: ^1.0.2
   cached_network_image: ^3.3.0
@@ -23,6 +23,8 @@ dependencies:
   encrypt: ^5.0.2
   zego_uikit_prebuilt_live_audio_room: ^3.16.3
   faker: ^2.1.0
+  file_picker: 10.1.2
+  package_info_plus: 8.0.2
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +32,11 @@ dev_dependencies:
 
   flutter_lints: ^3.0.0
 
+dependency_overrides:
+  zego_plugin_adapter: 2.13.9
+  zego_express_engine: 3.20.0
+  zego_callkit: 1.0.0+4
+  zego_zim: 2.21.1+1
 
 flutter:
   uses-material-design: true

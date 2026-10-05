@@ -246,9 +246,6 @@ class LiveStreamingPageState extends State<LiveStreamingPage> {
                 ..audioVideoView.useVideoViewAspectFill = false
                 ..audioVideoView.foregroundBuilder = foregroundBuilder
                 ..pkBattle = pkConfig()
-                ..inRoomMessage.attributes = () => {
-                      'lv': UserManager.instance.level.value.toString(),
-                    }
                 ..inRoomMessage.avatarLeadingBuilder = _buildLevelBadge,
             ),
             Offstage(

@@ -453,9 +453,8 @@ class _HomePageState extends State<HomePage> {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
-                jumpToGamePage(
+                _jumpToLive(
                   context,
-                  roomID: liveStreamingTextCtrl.text.trim(),
                   isHost: false,
                 );
               },
