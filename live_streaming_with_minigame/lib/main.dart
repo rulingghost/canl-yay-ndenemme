@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // Package imports:
 import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_streaming.dart';
 
-import 'home_page.dart';
+import 'login_page.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -29,8 +29,13 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      home: HomePage(),
+      title: 'Zego Live & Audio',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF0F0C20),
+        primaryColor: const Color(0xFFFF2E93),
+      ),
+      home: const LoginPage(),
       navigatorKey: navigatorKey,
       builder: (BuildContext context, Widget? child) {
         return Stack(

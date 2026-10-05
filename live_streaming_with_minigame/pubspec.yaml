@@ -25,6 +25,7 @@ dependencies:
   faker: ^2.1.0
   file_picker: 10.1.2
   package_info_plus: 8.0.2
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:
