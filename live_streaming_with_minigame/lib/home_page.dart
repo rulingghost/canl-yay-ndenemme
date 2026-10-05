@@ -480,6 +480,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _jumpToLive(BuildContext context, {required bool isHost}) {
+    if (UserManager.instance.isBanned.value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🚫 Hesabınız yönetici tarafından askıya alınmıştır!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -494,6 +504,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _jumpToAudioRoom(BuildContext context, {required bool isHost}) {
+    if (UserManager.instance.isBanned.value) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🚫 Hesabınız yönetici tarafından askıya alınmıştır!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
