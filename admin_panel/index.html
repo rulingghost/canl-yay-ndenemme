@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canlı Yayın & Sohbet - Web Admin Paneli</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-icon">🌟</span>
+        <h2>ZegoAdmin</h2>
+      </div>
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <span class="icon">📊</span> Genel Bakış
+        </a>
+        <a href="#users" class="nav-item" data-tab="users">
+          <span class="icon">👥</span> Kullanıcılar & Coin
+        </a>
+        <a href="#streams" class="nav-item" data-tab="streams">
+          <span class="icon">📹</span> Canlı Yayın & Odalar
+        </a>
+        <a href="#broadcast" class="nav-item" data-tab="broadcast">
+          <span class="icon">📢</span> Sistem Duyurusu
+        </a>
+        <a href="#settings" class="nav-item" data-tab="settings">
+          <span class="icon">⚙️</span> Firebase Ayarları
+        </a>
+      </nav>
+      <div class="db-status" id="dbStatusBadge">
+        <span class="dot"></span>
+        <span id="dbStatusText">Demo Modunda Çalışıyor</span>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="page-title">
+          <h1 id="pageTitleText">Yönetim Paneli</h1>
+          <p>Kullanıcı bakiyeleri, seviyeler ve canlı yayın kontrolleri</p>
+        </div>
+        <div class="admin-profile">
+          <img src="https://robohash.org/admin-master.png" alt="Admin" class="avatar">
+          <div class="profile-info">
+            <strong>Süper Yönetici</strong>
+            <small>Admin</small>
+          </div>
+        </div>
+      </header>
+
+      <!-- Section: Dashboard -->
+      <section id="section-dashboard" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon purple">👥</div>
+            <div class="stat-details">
+              <span class="label">Toplam Kullanıcı</span>
+              <strong class="value" id="statTotalUsers">12</strong>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">🪙</div>
+            <div class="stat-details">
+              <span class="label">Dolaşımdaki Coin</span>
+              <strong class="value" id="statTotalCoins">125,400</strong>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">📹</div>
+            <div class="stat-details">
+              <span class="label">Aktif Canlı Yayınlar</span>
+              <strong class="value" id="statActiveStreams">2</strong>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">🚫</div>
+            <div class="stat-details">
+              <span class="label">Banlı Kullanıcılar</span>
+              <strong class="value" id="statBannedUsers">1</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-widgets">
+          <div class="widget-card">
+            <h3>⚡ Hızlı Kullanıcı Arama & Coin Yükleme</h3>
+            <div class="quick-action-form">
+              <input type="text" id="quickUserIdInput" placeholder="Kullanıcı ID (Örn: 582109)">
+              <input type="number" id="quickCoinAmount" placeholder="Coin Miktarı (Örn: 5000)">
+              <button class="btn btn-primary" onclick="quickAddCoins()">+ Coin Gönder</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Users -->
+      <section id="section-users" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Kayıtlı Kullanıcılar & Bakiye Yönetimi</h3>
+            <button class="btn btn-success" onclick="openNewUserModal()">+ Yeni Kullanıcı Ekle</button>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Avatar & ID</th>
+                  <th>Kullanıcı Adı</th>
+                  <th>Seviye</th>
+                  <th>Coin Bakiyesi</th>
+                  <th>Durum</th>
+                  <th>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <!-- Javascript ile dinamik doldurulur -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Streams -->
+      <section id="section-streams" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Aktif Canlı Yayınlar & Sesli Odalar</h3>
+            <span class="badge badge-live">Canlı İzleme</span>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Yayın / Oda ID</th>
+                  <th>Tür</th>
+                  <th>Yayıncı (Host)</th>
+                  <th>İzleyici Sayısı</th>
+                  <th>İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="streamsTableBody">
+                <!-- Javascript ile doldurulur -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Broadcast -->
+      <section id="section-broadcast" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>📢 Tüm Kullanıcılara & Yayınlara Canlı Bildirim Gönder</h3>
+          </div>
+          <div class="card-body">
+            <p class="subtitle">Bu mesaj aktif olan tüm canlı yayın ve sohbet odalarının sohbet ekranında yönetici duyurusu olarak kırmızı renkte belirecektir.</p>
+            <div class="form-group">
+              <label>Duyuru Başlığı</label>
+              <input type="text" id="broadcastTitle" placeholder="Örn: Sistem Güncellemesi veya Özel Hediye Festivali!">
+            </div>
+            <div class="form-group">
+              <label>Duyuru Mesajı</label>
+              <textarea id="broadcastMsg" rows="4" placeholder="Canlı yayındaki tüm kullanıcılara iletilecek mesajı yazın..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="sendBroadcastMessage()">🚀 Canlı Yayınlara Gönder</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Firebase Settings -->
+      <section id="section-settings" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Google Firebase Veritabanı Bağlantısı</h3>
+          </div>
+          <div class="card-body">
+            <p class="subtitle">Google Firebase Console'dan aldığınız Web Config kodunu buraya yapıştırıp kaydedin. Böylece panel doğrudan Google Cloud veritabanınıza bağlanacaktır.</p>
+            <div class="form-group">
+              <label>Firebase Web Configuration (JSON formatında)</label>
+              <textarea id="firebaseConfigInput" rows="10" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "projeniz.firebaseapp.com",
+  "projectId": "projeniz",
+  "storageBucket": "projeniz.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+            </div>
+            <button class="btn btn-success" onclick="saveFirebaseConfig()">💾 Firebase Bağlantısını Kaydet</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Coin Ekle/Düzenle -->
+  <div id="coinModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 id="coinModalTitle">Coin Düzenle</h4>
+        <span class="close" onclick="closeCoinModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p id="coinModalUserInfo">Kullanıcı: ...</p>
+        <div class="form-group">
+          <label>Miktar (+ Ekle / - Düşür)</label>
+          <input type="number" id="modalCoinAmount" value="1000">
+        </div>
+        <div class="modal-buttons">
+          <button class="btn btn-success" onclick="submitCoinChange(true)">+ Coin Ekle</button>
+          <button class="btn btn-danger" onclick="submitCoinChange(false)">- Coin Düşür</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
